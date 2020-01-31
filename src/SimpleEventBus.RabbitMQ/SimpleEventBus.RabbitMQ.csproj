@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
+    <Authors>Shukurdin Aydarov</Authors>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <NeutralLanguage>English(United States)</NeutralLanguage>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SimpleEvenBus.Abstractions\SimpleEvenBus.Abstractions\SimpleEvenBus.Abstractions.csproj" />
+    <ProjectReference Include="..\SimpleEvenBus.Abstractions\SimpleEvenBus.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>
