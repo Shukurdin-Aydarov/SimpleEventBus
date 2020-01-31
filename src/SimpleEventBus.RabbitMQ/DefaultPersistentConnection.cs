@@ -18,7 +18,7 @@ namespace SimpleEventBus.RabbitMQ
 
         private readonly object sync = new object();
 
-        public DefaultPersistentConnection(IConnectionFactory connectionFactory, int retryCount, ILogger logger)
+        public DefaultPersistentConnection(IConnectionFactory connectionFactory, ILogger logger, int retryCount = 5)
         {
             this.logger = logger;
             this.retryCount = retryCount;
