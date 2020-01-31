@@ -7,8 +7,16 @@ namespace SimpleEvenBus.Abstractions
 {
     public interface ISubscriptionsManager
     {
-        void AddSubscription<THandler>() where THandler : IEventHandler;
-        void RemoveSubscription<THandler>() where THandler : IEventHandler;
+        bool IsEmpty { get; }
+
+        event EventHandler<string> OnEventRemoved;
+
+        void Subscribe<THandler>() where THandler : IEventHandler;
+        void Subscribe(Type handlerType);
+        
+        void Unsubscribe<THandler>() where THandler : IEventHandler;
+        void Unsubscribe(Type handlerType);
+        
         void Clear();
 
         bool HasSubscriptionsForEvent(string eventName);
@@ -17,7 +25,7 @@ namespace SimpleEvenBus.Abstractions
         Type GetEventType(string eventName);
         string GetEventName<TEvent>() where TEvent : Event;
 
-        IEnumerable<SubscriptionInfo> GetHandlersForEvent(string eventName);
-        IEnumerable<SubscriptionInfo> GetHandlersForEvent<TEvent>() where TEvent : Event;
+        IEnumerable<EventHandlerInfo> GetHandlersForEvent(string eventName);
+        IEnumerable<EventHandlerInfo> GetHandlersForEvent<TEvent>() where TEvent : Event;
     }
 }

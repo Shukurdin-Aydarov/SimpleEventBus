@@ -6,21 +6,24 @@ namespace SimpleEvenBus.Abstractions
 {
     public static class DefaultEventHandler
     {
-        internal static string GetEventNameByHandler(Type handlerType)
+        public static string GetEventNameByHandler(Type handlerType)
         {
-            var interfaceType = typeof(IEventHandler);
-            if (!interfaceType.IsAssignableFrom(handlerType))
-                Throws.DoesNotImplement(handlerType.FullName, interfaceType.FullName);
+            Throws.IfIEventHandlerNotImplemented(handlerType);
 
-            if (handlerType.IsGenericType)
-                return handlerType.GenericTypeArguments[0].Name;
-
-            return nameof(Event);
+            return GetEventNameByHandlerInternal(handlerType);
         }
 
         public static string GetEventNameByHandler<THandler>() where THandler : IEventHandler
         {
-            return GetEventNameByHandler(typeof(THandler));
+            return GetEventNameByHandlerInternal(typeof(THandler));
+        }
+
+        internal static string GetEventNameByHandlerInternal(Type handlerType)
+        {
+            if (handlerType.IsGenericType)
+                return handlerType.GenericTypeArguments[0].Name;
+
+            return nameof(Event);
         }
     }
 }

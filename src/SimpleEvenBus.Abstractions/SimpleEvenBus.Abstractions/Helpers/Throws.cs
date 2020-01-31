@@ -16,5 +16,12 @@ namespace SimpleEvenBus.Abstractions
         {
             throw new ArgumentException($"Type '{fullTypeName}' does not implement '{fullInterfaceName}'");
         }
+
+        internal static void IfIEventHandlerNotImplemented(Type handlerType)
+        {
+            var interfaceType = typeof(IEventHandler);
+            if (!interfaceType.IsAssignableFrom(handlerType))
+                DoesNotImplement(handlerType.FullName, interfaceType.FullName);
+        }
     }
 }

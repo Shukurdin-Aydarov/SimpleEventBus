@@ -8,27 +8,44 @@ namespace SimpleEvenBus.Abstractions
 {
     public class DefaultSubscriptionManager : ISubscriptionsManager
     {
-        private readonly Dictionary<string, List<SubscriptionInfo>> handlers;
+        private readonly Dictionary<string, List<EventHandlerInfo>> handlers;
         private readonly HashSet<Type> eventTypes;
+
+        public event EventHandler<string> OnEventRemoved;
+
+        public bool IsEmpty => handlers.Count is 0;
 
         public DefaultSubscriptionManager()
         {
-            handlers = new Dictionary<string, List<SubscriptionInfo>>();
+            handlers = new Dictionary<string, List<EventHandlerInfo>>();
             eventTypes = new HashSet<Type>();
         }
 
-        public void AddSubscription<THandler>() where THandler : IEventHandler
+        public void Subscribe<THandler>() where THandler : IEventHandler
         {
             var handlerType = typeof(THandler);
-            var eventName = DefaultEventHandler.GetEventNameByHandler(handlerType);
+
+            SubscribeInternal(handlerType);
+        }
+
+        public void Subscribe(Type handlerType)
+        {
+            Throws.IfIEventHandlerNotImplemented(handlerType);
+
+            SubscribeInternal(handlerType);
+        }
+
+        private void SubscribeInternal(Type handlerType)
+        {
+            var eventName = DefaultEventHandler.GetEventNameByHandlerInternal(handlerType);
 
             if (!HasSubscriptionsForEvent(eventName))
-                handlers[handlerType.Name] = new List<SubscriptionInfo>();
+                handlers[handlerType.Name] = new List<EventHandlerInfo>();
 
             if (handlers[handlerType.Name].Any(s => s.HandlerType == handlerType))
                 Throws.HandlerAlreadyRegistered(handlerType.Name, eventName);
 
-            handlers[eventName].Add(new SubscriptionInfo(handlerType));
+            handlers[eventName].Add(new EventHandlerInfo(handlerType));
         }
 
         public void Clear() => handlers.Clear();
@@ -43,12 +60,12 @@ namespace SimpleEvenBus.Abstractions
             return eventTypes.SingleOrDefault(e => e.Name == eventName);
         }
 
-        public IEnumerable<SubscriptionInfo> GetHandlersForEvent(string eventName)
+        public IEnumerable<EventHandlerInfo> GetHandlersForEvent(string eventName)
         {
             return handlers[eventName];
         }
 
-        public IEnumerable<SubscriptionInfo> GetHandlersForEvent<TEvent>() where TEvent : Event
+        public IEnumerable<EventHandlerInfo> GetHandlersForEvent<TEvent>() where TEvent : Event
         {
             var eventName = GetEventName<TEvent>();
             return GetHandlersForEvent(eventName);
@@ -62,10 +79,23 @@ namespace SimpleEvenBus.Abstractions
             return HasSubscriptionsForEvent(eventName);
         }
 
-        public void RemoveSubscription<THandler>() where THandler : IEventHandler
+        public void Unsubscribe<THandler>() where THandler : IEventHandler
         {
             var handlerType = typeof(THandler);
-            var eventName = DefaultEventHandler.GetEventNameByHandler(handlerType);
+
+            UnsubscribeInternal(handlerType);
+        }
+
+        public void Unsubscribe(Type handlerType)
+        {
+            Throws.IfIEventHandlerNotImplemented(handlerType);
+
+            UnsubscribeInternal(handlerType);
+        }
+
+        private void UnsubscribeInternal(Type handlerType)
+        {
+            var eventName = DefaultEventHandler.GetEventNameByHandlerInternal(handlerType);
 
             if (!HasSubscriptionsForEvent(eventName)) return;
 
@@ -80,6 +110,8 @@ namespace SimpleEvenBus.Abstractions
                 var eventType = eventTypes.SingleOrDefault(e => e.Name == eventName);
                 if (eventType != null)
                     eventTypes.Remove(eventType);
+                
+                OnEventRemoved?.Invoke(this, eventName);
             }
         }
     }
